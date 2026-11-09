@@ -11,65 +11,8 @@
 #' @importFrom odbc odbc
 #' @keywords internal
 dust_connect_to_postgres <- function(silencer = FALSE) {
-
-  # Check silencer parameter to determine whether to log
-  # Stop logging and send message
-  if (isTRUE(silencer)) {
-    message("DUST: Logging is currently disabled. To re-enable it, set the `silencer` parameter to FALSE.")
-    return(NULL)
-  }
-
-  # Retrieve credentials from environment variables
-  db <- Sys.getenv("POSTGRES_DB")
-  username_pg <- Sys.getenv("POSTGRES_USER")
-  password <- Sys.getenv("POSTGRES_PASSWORD")
-  host <- Sys.getenv("POSTGRES_HOST")
-  port <- Sys.getenv("POSTGRES_PORT")
-
-  if (!nzchar(db) || !nzchar(username_pg) || !nzchar(password) || !nzchar(host) || !nzchar(port)) {
-    message("DUST: PostgreSQL settings are incomplete. Set POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, and POSTGRES_PORT, or disable DUST logging.")
-    return(NULL)
-  }
-
-  tryCatch({
-    if (.Platform$OS.type == "unix") {
-      driver_candidates <- c("PostgreSQL Unicode(x64)", "PostgreSQL Unicode", "PostgreSQL ANSI", "PostgreSQL")
-      installed_drivers <- tryCatch(odbc::odbcListDrivers()$name, error = function(e) character())
-      driver_name <- driver_candidates[driver_candidates %in% installed_drivers]
-
-      if (!length(driver_name)) {
-        postgres_drivers <- installed_drivers[grepl("PostgreSQL", installed_drivers, ignore.case = TRUE)]
-        driver_name <- if (length(postgres_drivers) > 0) postgres_drivers[1] else character()
-      }
-
-      if (!length(driver_name)) {
-        stop("No PostgreSQL ODBC driver is installed for this system.")
-      }
-
-      DBI::dbConnect(
-        odbc::odbc(),
-        Driver = driver_name,
-        Server = host,
-        Database = db,
-        UID = username_pg,
-        PWD = password,
-        Port = as.integer(port)
-      )
-    } else {
-      # Create a postgres connection using RPostgres
-      DBI::dbConnect(
-        RPostgres::Postgres(),
-        host = host,
-        dbname = db,
-        user = username_pg,
-        password = password,
-        port = as.integer(port)
-      )
-    }
-  }, error = function(e) {
-    message("DUST: Unable to connect to PostgreSQL: ", e$message)
-    NULL
-  })
+  message("DUST: PostgreSQL support is disabled in this local build; using in-memory mode only.")
+  NULL
 }
 
 
