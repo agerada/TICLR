@@ -16,8 +16,6 @@
 #' @importFrom colourpicker colourInput updateColourInput
 #' @importFrom shinyWidgets updateSliderTextInput
 #' @import RColorBrewer
-#' @importFrom DBI dbConnect dbWriteTable
-#' @importFrom odbc odbc
 #' @importFrom uuid UUIDgenerate
 #' @importFrom scales hue_pal
 "_PACKAGE"

@@ -12,13 +12,9 @@ app_server <- function(input, output, session) {
 
 
   # --- DUST User Tracking Setup ---
-  # Connect to DUST Postgres (silencer controlled via golem-config.yml)
-  silencer <- get_golem_config("silencer")
-  if(Sys.getenv("POSTGRES_PASSWORD") != ""){
-    silencer = FALSE
-  }
-   
-  postgres_con <- dust_connect_to_postgres(silencer = silencer)
+  # Local/in-memory mode: PostgreSQL telemetry and bookmarks are intentionally disabled.
+  silencer <- TRUE
+  postgres_con <- NULL
 
   # Session setup (detects platform, gets username, session ID, etc.)
   session_info <- dust_session_setup(session)

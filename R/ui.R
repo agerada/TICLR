@@ -22,7 +22,7 @@ app_ui <- function(request) {
 
       # Theme
       windowTitle = "TICLR Timeline Tool",
-      theme = ukhsa_theme,
+      theme = ukhsa_theme(),
 
       # Add tabs
       # Landing page

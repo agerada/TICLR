@@ -11,49 +11,8 @@
 #' @importFrom odbc odbc
 #' @keywords internal
 dust_connect_to_postgres <- function(silencer = FALSE) {
-
-  # Check silencer parameter to determine whether to log
-  # Stop logging and send message
-  if(silencer == TRUE) {
-
-    message("DUST: Logging is currently disabled. To re-enable it, set the `silencer` parameter to FALSE.")
-
-    return()
-
-    # Proceed with logging
-  } else {
-
-    # Retrieve credentials from environment variables
-    db <- Sys.getenv("POSTGRES_DB")
-    username_pg <- Sys.getenv("POSTGRES_USER")
-    password <- Sys.getenv("POSTGRES_PASSWORD")
-    host <- Sys.getenv("POSTGRES_HOST")
-    port <- Sys.getenv("POSTGRES_PORT")
-
-    if (.Platform$OS.type == "unix") {
-      # Create a postgres connection
-      connection <- DBI::dbConnect(
-        odbc::odbc(),
-        Driver = "PostgreSQL Unicode(x64)",
-        Server = host,
-        Database = db,
-        UID = username_pg,
-        PWD = password,
-        Port = as.integer(port)
-      )
-    } else {
-      # Create a postgres connection using RPostgres
-      connection <- DBI::dbConnect(
-        RPostgres::Postgres(),
-        host = host,
-        dbname = db,
-        user = username_pg,
-        password = password,
-        port = as.integer(port)
-      )
-    }
-    return(connection)
-  }
+  message("DUST: PostgreSQL support is disabled in this local build; using in-memory mode only.")
+  NULL
 }
 
 
@@ -125,9 +84,13 @@ dust_session_setup <- function(session) {
 #' @keywords internal
 dust_create_session_log <- function(app_name, session_id, username, silencer = FALSE) {
 
-  if (silencer == TRUE) {
+  if (isTRUE(silencer)) {
     return(NULL)
   }
+
+  app_name <- if (is.null(app_name) || length(app_name) == 0 || all(is.na(app_name))) "unknown" else as.character(app_name)[1]
+  session_id <- if (is.null(session_id) || length(session_id) == 0 || all(is.na(session_id))) "unknown-session" else as.character(session_id)[1]
+  username <- if (is.null(username) || length(username) == 0 || all(is.na(username))) "unknown-user" else as.character(username)[1]
 
   start_time <- Sys.time()
 
@@ -154,6 +117,10 @@ dust_create_session_log <- function(app_name, session_id, username, silencer = F
 #' @keywords internal
 dust_write_session_log <- function(session, users_data_start, log_file_path, session_id, con, access, write_locally = FALSE) {
   session$onSessionEnded(function() {
+
+    if (is.null(con) || !isS4(con)) {
+      return(invisible(NULL))
+    }
 
     users_data <- users_data_start
     end_time <- Sys.time()
@@ -206,6 +173,10 @@ dust_write_session_log <- function(session, users_data_start, log_file_path, ses
 #' @importFrom DBI dbWriteTable
 #' @keywords internal
 dust_log_tab_activity <- function(input_value, app_name, session_id, uname, log_file_path, postgres_con, write_locally = FALSE) {
+
+  if (is.null(postgres_con) || !isS4(postgres_con)) {
+    return(invisible(NULL))
+  }
 
   message("DUST: ", session_id, ": ", uname, ": USER ON ", input_value)
 
@@ -351,6 +322,10 @@ dust_log_tab_event <- function(input_id, input, app_name, session_id, uname,
 #' @keywords internal
 dust_log_event <- function(postgres_con, app_name, session_id, event_type, tag, value) {
 
+  if (is.null(postgres_con) || !isS4(postgres_con)) {
+    return(invisible(NULL))
+  }
+
   tryCatch({
     DBI::dbWriteTable(
       con = postgres_con,
@@ -373,6 +348,10 @@ dust_log_event <- function(postgres_con, app_name, session_id, event_type, tag, 
 
 
 dust_init_bookmarks <- function(postgres_con){
+  if (is.null(postgres_con) || !isS4(postgres_con)) {
+    return(invisible(NULL))
+  }
+
   # first create the table if it does not exist
   tryCatch({
     DBI::dbExecute(

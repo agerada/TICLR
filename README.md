@@ -1,93 +1,112 @@
-# Timeline for Infection Clusters tool in R (TICLR)
+# Timeline for Infection Clusters tool in R (TICLR) --- Portable Version
 
 **Version:** 2.1.0.0
 
+## Introduction
+
+This is a portable version of the Timeline for Infection Clusters tool in R (TICLR). See github.com/ukhsa-collaboration/TICLR for the source repository.
+
+This version is designed to be run as a standalone portable application. It comes pre-packaged with R and all the necessary packages required (no additional installation needed).
+
 ## Requirements
 
-* R >= 4.2.0
+* Currently only supports Windows (tested on Windows 10 and 11)
 
-## Installing the package
+## Usage
 
-Install directly from GitHub using the `remotes` package:
+* Download the portable version `.zip` file.
+* Extract to a local directory (avoid network drives or cloud-synced folders).
+* Run `run_app.bat` to start the application (you may need to right click and select "Run as administrator").
+* Follow the on-screen instructions to use the TICLR tool.
 
-``` r
-# install.packages("remotes")
-remotes::install_github("ukhsa-collaboration/TICLR")
+When ready to close the application, simply exit the TICLR batch window.
+
+## Developer notes
+
+`portR` is used to build the portable version of TICLR: [https://github.com/agerada/portR](https://github.com/agerada/portR).
+
+These are the build requirements:
+
+1. R >= 4.2.0
+2. `renv` package installed in R
+3. Additional `portR` requirements as specified in the [portR repository](https://github.com/agerada/portR).
+
+### System requirements for build host
+
+The build host and target machine determine which tools are required.
+
+| Host machine | Target machine | Requirements |
+|---|---|---|
+| macOS / Linux | Windows | innoextract (recommended) or 7z for extracting the R installer |
+| macOS | macOS | pkgutil and hdiutil (included on macOS) |
+| Any | Creating archives | zip command (standard on most systems) |
+
+For Windows builds on macOS/Linux:
+
+```bash
+# macOS
+brew install innoextract
+
+# Ubuntu/Debian
+sudo apt install innoextract
 ```
 
-## Launching the app
+Follow these steps to build:
 
-Load the package and run the app with `run_app()`:
+1. Clone this fork of the TICLR repository: 
 
-``` r
-library(TICLR)
-run_app()
+```bash
+git clone https://github.com/agerada/TICLR.git
+```
+2. Navigate into the cloned repository:
+
+```bash
+cd TICLR
 ```
 
-## Importing data
+3. Start R
 
-Input data must meet a specified long format with each row representing a patient movement. Five columns are required to produce a timeline. 
-These columns should contain data corresponding to:
+```bash
+R
+```
 
-* Unique patient identifier
-* Movement number for each patient
-* Unique location identifier
-* Start date of each movement
-* End date of each movement
+4. Install `TICLR` to the local `renv` library:
 
-The following columns are optional:
-* Date of symptoms onset
-* Date of symptoms end
-* Date of positive specimen
-* Date of death
-* Case definition
-* Date of negative screen
-* Additional category (for use in filters), e.g., microbiological typing
+```R
+renv::install(".")
+```
 
-TICLR is compatible with comma separated text (.txt or .csv). TICLR accepts three different date formats (DMY, MDY, YMD; e.g. 01/12/2026, 12/01/2026, 2026/12/01) and any separator (e.g. - or 
-/). It is not possible to edit data loaded into TICLR; all data editing must be done prior to loading into TICLR.
+5. **Important:** Use `renv` snapshot to lock the package versions:
 
-## Example data and template
+```r
+renv::snapshot(type = "all")
+```
 
-Example datasets are provided and can be loaded from the Input Data tab to explore TICLR's features without needing your own data.
+6. Build the portable version using `portR`:
 
-A blank csv template with recommended field names can also be downloaded from the Input Data tab.
+```r
+library(portR)
+build_windows(  project_path = ".", 
+ r_version = "4.5.2", 
+ shiny_command = "TICLR::run_app()",
+ extra_dirs = c("inst"),
+ create_zip = TRUE,
+ zip_name = "TICLR.zip"
+)
+```
 
-## Displaying data
+## Automated GitHub release (main branch)
 
-Once a dataset has been loaded, ensure that the appropriate field has been selected from the drop down options for all compulsory columns, and any optional columns required. If the imported data 
-uses the suggested column names included in the template, these will auto-populate. 
+This repository includes a GitHub Actions workflow at `.github/workflows/release-portable.yml`.
 
-All five compulsory fields required by TICLR must be mapped in order to plot a timeline.
+How it works:
 
-When the dataset is loaded, and column mapping has been completed, the raw and cleaned datasets will be presented in tables below the mapping options. Any issues identified during data cleaning, 
-e.g., missing data or incorrect date formats, will be displayed as a warning. Manually correct these in the dataset and upload the updated data.
+1. Trigger: runs automatically on `push` to `main`.
+2. Build: restores `renv`, installs `portR`, and builds a portable Windows bundle via `portR::build_windows(...)`.
+3. Release: creates a GitHub Release tagged `v<DESCRIPTION Version>` and uploads the generated `.zip` as a release asset.
+4. Safety: if the tag already exists, release creation is skipped.
 
-**Please note**: Movements and symptom onsets with no end date will be automatically extended to the current date, assuming that the patient is still admitted to this location. If this is not the case, manually update
-the end date and upload to TICLR.
+Recommended repository settings:
 
-## Customising the timeline
-
-A limited number of location colours are available: 8 (Accent, Dark 2, Set 2, Colour blind), 9 (Set 1), 11 (Spectral), 12 (Set 3), 20 (Tableau20). Only colour schemes with the required number of colours will 
-be available after data has been imported.
-
-The options for timeline customisation will vary depending on the optional fields included in the imported data set.
-
-The timeline can be downloaded as a ggplot object (.rds) for additional user customisation.
-
-## Changes from version 2
-
-* Help guides can now be found in the buttons located on each page
-* Ability to download a csv template for data collection
-* Improved variable selection during data import
-* Added data quality warnings to data import
-* Added tables showing raw and cleaned data
-* Ability to present dates of negative screens
-* Optional suppression of time periods with no admissions
-* Ability to display single day admissions
-* Options to download timeline as an svg file or customisable ggplot object
-* Ability to filter by date range, location, case definition, and an additional customisable field
-* Ability to present case definitions of cases as a symbol on y-axis
-* Colour-blind friendly palette added
-* Timeline options presented in tabs
-* Renv added for managing packages. See README.md for renv instructions
+1. Protect `main` and require pull requests for merges (this ensures releases only happen from merged PRs).
+2. Keep `DESCRIPTION` version updated before merging to `main` so each merge intended for release has a unique version tag.

@@ -35,11 +35,8 @@ Imports:
     utils,
     glue,
     purrr,
-    DBI,
-    odbc,
     uuid,
     plotly,
     htmlwidgets,
     keys,
-    shinycssloaders,
-    RPostgres
+    shinycssloaders
