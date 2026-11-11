@@ -94,19 +94,3 @@ build_windows(  project_path = ".",
  zip_name = "TICLR.zip"
 )
 ```
-
-## Automated GitHub release (main branch)
-
-This repository includes a GitHub Actions workflow at `.github/workflows/release-portable.yml`.
-
-How it works:
-
-1. Trigger: runs automatically on `push` to `main`.
-2. Build: restores `renv`, installs `portR`, and builds a portable Windows bundle via `portR::build_windows(...)`.
-3. Release: creates a GitHub Release tagged `v<DESCRIPTION Version>` and uploads the generated `.zip` as a release asset.
-4. Safety: if the tag already exists, release creation is skipped.
-
-Recommended repository settings:
-
-1. Protect `main` and require pull requests for merges (this ensures releases only happen from merged PRs).
-2. Keep `DESCRIPTION` version updated before merging to `main` so each merge intended for release has a unique version tag.
