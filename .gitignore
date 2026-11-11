@@ -2,3 +2,11 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# Portable release artifacts
+TICLR-*.zip
+TICLR.zip
+portable_app_windows.zip
+
+# portR build output
+dist/
