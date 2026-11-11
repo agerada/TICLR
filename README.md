@@ -14,7 +14,7 @@ This version is designed to be run as a standalone portable application. It come
 
 ## Usage
 
-* Download the portable version `.zip` file.
+* [Download](https://github.com/agerada/TICLR/releases/latest) the portable version `.zip` file.
 * Extract to a local directory (avoid network drives or cloud-synced folders).
 * Run `run_app.bat` to start the application (you may need to right click and select "Run as administrator").
 * Follow the on-screen instructions to use the TICLR tool.
