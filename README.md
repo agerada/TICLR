@@ -23,7 +23,7 @@ When ready to close the application, simply exit the TICLR batch window.
 
 ## Developer notes
 
-`portR` is used to build the portable version of TICLR: [https://github.com/agerada/portR](https://github.com/agerada/portR).
+`portR`[https://github.com/agerada/portR] is used to build the portable version of TICLR.
 
 These are the build requirements:
 

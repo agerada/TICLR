@@ -25,8 +25,14 @@ jobs:
       - name: Install build dependencies
         shell: Rscript {0}
         run: |
-          install.packages(c("renv", "remotes"), repos = "https://cloud.r-project.org")
-          remotes::install_github("agerada/portR")
+          install.packages("renv", repos = "https://cloud.r-project.org")
+
+      - name: Install portR from git
+        shell: bash
+        run: |
+          rm -rf /tmp/portR
+          git clone --depth 1 https://github.com/agerada/portR.git /tmp/portR
+          Rscript -e 'install.packages("/tmp/portR", repos = NULL, type = "source")'
 
       - name: Restore renv library
         shell: Rscript {0}
